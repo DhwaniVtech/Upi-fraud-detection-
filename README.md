@@ -131,7 +131,7 @@ curl -X POST "http://127.0.0.1:8000/api/score" \
 
 - **Likely Fraudulent**:
   - unusually high amount,
-  - odd-hour transaction (`0–5` or `23`),
+  - odd-hour transaction (`0-5` or `23`),
   - high velocity (`>= 6` tx/hour),
   - low device reputation (`< 0.4`),
   - rapid requests and suspicious link indicators.

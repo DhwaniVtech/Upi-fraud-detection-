@@ -24,7 +24,7 @@ MODEL_PATH = Path("model_artifacts/iforest.joblib")
 
 
 def is_odd_hour(hour_of_day: int) -> int:
-    return int(hour_of_day <= 5 or hour_of_day >= 23)
+    return int(hour_of_day <= 5 or hour_of_day == 23)
 
 
 def generate_synthetic_data(n_samples: int = 7000, random_state: int = 42) -> pd.DataFrame:
