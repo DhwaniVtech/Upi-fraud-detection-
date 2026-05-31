@@ -32,7 +32,9 @@ class TransactionInput(BaseModel):
 
 
 class FraudEngine:
-    # Tuned for high recall on synthetic scam-like patterns for this prototype.
+    # IsolationForest contamination is the expected anomaly share in training data.
+    # We use 0.28 because this synthetic dataset intentionally over-represents scam-like
+    # behavior to prioritize fraud recall for prototype safety checks.
     CONTAMINATION = 0.28
 
     def __init__(self, seed: int = 42) -> None:
@@ -240,12 +242,14 @@ def _open_browser() -> None:
     webbrowser.open("http://127.0.0.1:8000", new=2)
 
 
+def _delayed_open_browser() -> None:
+    time.sleep(1.5)
+    _open_browser()
+
+
 if __name__ == "__main__":
     import uvicorn
 
-    browser_thread = threading.Thread(
-        target=lambda: (time.sleep(1.5), _open_browser()),
-        daemon=True,
-    )
+    browser_thread = threading.Thread(target=_delayed_open_browser, daemon=True)
     browser_thread.start()
     uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=False)
