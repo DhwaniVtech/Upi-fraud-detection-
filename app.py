@@ -31,6 +31,9 @@ class TransactionInput(BaseModel):
 
 
 class FraudEngine:
+    # Tuned for high recall on synthetic scam-like patterns for this prototype.
+    CONTAMINATION = 0.28
+
     def __init__(self, seed: int = 42) -> None:
         self.rng = np.random.default_rng(seed)
         self.engine = self._train()
@@ -44,7 +47,8 @@ class FraudEngine:
         receive_link = self.rng.binomial(1, p=0.1, size=n)
 
         # Inject suspicious slices to improve fraud recall.
-        suspicious_idx = self.rng.choice(n, size=max(1, n // 5), replace=False)
+        suspicious_count = max(1, int(n * self.CONTAMINATION))
+        suspicious_idx = self.rng.choice(n, size=suspicious_count, replace=False)
         velocity[suspicious_idx] = np.clip(velocity[suspicious_idx] + self.rng.integers(4, 12, size=suspicious_idx.size), 0, 30)
         device_rep[suspicious_idx] = np.clip(device_rep[suspicious_idx] - self.rng.uniform(0.2, 0.6, size=suspicious_idx.size), 0, 1)
         rapid[suspicious_idx] = 1
@@ -59,7 +63,7 @@ class FraudEngine:
 
         model = IsolationForest(
             n_estimators=300,
-            contamination=0.28,
+            contamination=self.CONTAMINATION,
             random_state=42,
         )
         model.fit(scaled)
@@ -238,5 +242,10 @@ def _open_browser() -> None:
 if __name__ == "__main__":
     import uvicorn
 
-    threading.Timer(1.5, _open_browser).start()
-    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=False)
+    browser_timer = threading.Timer(1.5, _open_browser)
+    browser_timer.daemon = True
+    browser_timer.start()
+    try:
+        uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=False)
+    finally:
+        browser_timer.cancel()

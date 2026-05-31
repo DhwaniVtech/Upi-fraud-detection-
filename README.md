@@ -21,7 +21,7 @@ A lightweight, interpretable UPI fraud detection engine that scores incoming tra
 ## Local setup
 
 ```bash
-cd /tmp/workspace/DhwaniVtech/Upi-fraud-detection-
+cd <repository-directory>
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
