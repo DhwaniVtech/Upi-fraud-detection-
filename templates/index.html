@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UPI Safety Check</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>UPI Transaction Safety Check</h1>
+      <p class="subtext">Enter transaction details to get a fraud risk score with clear reasons.</p>
+
+      <form id="risk-form">
+        <div class="grid">
+          <label>
+            Amount (₹)
+            <input type="number" id="amount" min="1" value="1200" required />
+          </label>
+          <label>
+            Hour of Day (0-23)
+            <input type="number" id="hour_of_day" min="0" max="23" value="14" required />
+          </label>
+          <label>
+            Transactions in Last Hour
+            <input type="number" id="transactions_last_hour" min="0" value="1" required />
+          </label>
+          <label>
+            Device Reputation (0.0-1.0)
+            <input type="number" id="device_reputation" step="0.01" min="0" max="1" value="0.9" required />
+          </label>
+        </div>
+
+        <div class="checks">
+          <label><input type="checkbox" id="rapid_consecutive_requests" /> Rapid consecutive requests</label>
+          <label><input type="checkbox" id="suspicious_receive_link" /> Suspicious “receive money” link</label>
+          <label><input type="checkbox" id="is_new_payee" /> New payee</label>
+        </div>
+
+        <button type="submit">Check Safety</button>
+      </form>
+
+      <section id="result" class="result hidden">
+        <h2>Result</h2>
+        <p><strong>Risk Score:</strong> <span id="risk-score"></span>/100</p>
+        <p><strong>Classification:</strong> <span id="classification"></span></p>
+        <p><strong>Summary:</strong> <span id="reason"></span></p>
+        <ul id="reasons-list"></ul>
+      </section>
+    </main>
+
+    <script>
+      const form = document.getElementById("risk-form");
+      const result = document.getElementById("result");
+      const riskScore = document.getElementById("risk-score");
+      const classification = document.getElementById("classification");
+      const reason = document.getElementById("reason");
+      const reasonsList = document.getElementById("reasons-list");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const payload = {
+          amount: Number(document.getElementById("amount").value),
+          hour_of_day: Number(document.getElementById("hour_of_day").value),
+          transactions_last_hour: Number(document.getElementById("transactions_last_hour").value),
+          device_reputation: Number(document.getElementById("device_reputation").value),
+          rapid_consecutive_requests: document.getElementById("rapid_consecutive_requests").checked,
+          suspicious_receive_link: document.getElementById("suspicious_receive_link").checked,
+          is_new_payee: document.getElementById("is_new_payee").checked
+        };
+
+        const response = await fetch("/api/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+
+        riskScore.textContent = data.risk_score;
+        classification.textContent = data.classification;
+        reason.textContent = data.reason;
+        reasonsList.innerHTML = "";
+        data.reasons.forEach((item) => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          reasonsList.appendChild(li);
+        });
+
+        result.classList.remove("hidden", "safe", "suspicious", "fraudulent");
+        result.classList.add(data.classification.toLowerCase());
+      });
+    </script>
+  </body>
+</html>
+
