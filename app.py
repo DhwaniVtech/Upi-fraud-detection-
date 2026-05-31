@@ -8,7 +8,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from starlette.requests import Request
 
-from fraud_engine import MODEL_PATH, load_model, score_transaction, train_and_save_model
+from fraud_engine import MODEL_PATH, is_odd_hour, load_model, score_transaction, train_and_save_model
 
 templates = Jinja2Templates(directory="templates")
 
@@ -51,7 +51,6 @@ def health():
 def api_score(payload: TransactionInput):
     global MODEL_ARTIFACTS
     if MODEL_ARTIFACTS is None:
-        train_and_save_model(MODEL_PATH)
         MODEL_ARTIFACTS = load_model(MODEL_PATH)
     features = {
         "amount": payload.amount,
@@ -61,6 +60,6 @@ def api_score(payload: TransactionInput):
         "rapid_consecutive_requests": int(payload.rapid_consecutive_requests),
         "suspicious_receive_link": int(payload.suspicious_receive_link),
         "is_new_payee": int(payload.is_new_payee),
-        "odd_hour": int(payload.hour_of_day <= 5 or payload.hour_of_day >= 23),
+        "odd_hour": is_odd_hour(payload.hour_of_day),
     }
     return score_transaction(features, MODEL_ARTIFACTS)

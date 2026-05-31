@@ -69,27 +69,38 @@
           is_new_payee: document.getElementById("is_new_payee").checked
         };
 
-        const response = await fetch("/api/score", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        const data = await response.json();
+        try {
+          const response = await fetch("/api/score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            throw new Error("Unable to fetch risk score right now.");
+          }
+          const data = await response.json();
 
-        riskScore.textContent = data.risk_score;
-        classification.textContent = data.classification;
-        reason.textContent = data.reason;
-        reasonsList.innerHTML = "";
-        data.reasons.forEach((item) => {
-          const li = document.createElement("li");
-          li.textContent = item;
-          reasonsList.appendChild(li);
-        });
+          riskScore.textContent = data.risk_score;
+          classification.textContent = data.classification;
+          reason.textContent = data.reason;
+          reasonsList.innerHTML = "";
+          data.reasons.forEach((item) => {
+            const li = document.createElement("li");
+            li.textContent = item;
+            reasonsList.appendChild(li);
+          });
 
-        result.classList.remove("hidden", "safe", "suspicious", "fraudulent");
-        result.classList.add(data.classification.toLowerCase());
+          result.classList.remove("hidden", "safe", "suspicious", "fraudulent");
+          result.classList.add(data.classification.toLowerCase());
+        } catch (error) {
+          riskScore.textContent = "-";
+          classification.textContent = "Error";
+          reason.textContent = "Could not score this transaction right now. Please try again.";
+          reasonsList.innerHTML = "";
+          result.classList.remove("hidden", "safe", "suspicious", "fraudulent");
+          result.classList.add("suspicious");
+        }
       });
     </script>
   </body>
 </html>
-

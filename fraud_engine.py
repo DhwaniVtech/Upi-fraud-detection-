@@ -23,7 +23,16 @@ FEATURE_COLUMNS = [
 MODEL_PATH = Path("model_artifacts/iforest.joblib")
 
 
+def is_odd_hour(hour_of_day: int) -> int:
+    return int(hour_of_day <= 5 or hour_of_day >= 23)
+
+
 def generate_synthetic_data(n_samples: int = 7000, random_state: int = 42) -> pd.DataFrame:
+    """Generate synthetic UPI-like transactions for anomaly model training.
+
+    Returns a dataframe containing normalized risk-relevant metadata such as amount,
+    hour, velocity, device trust, and common scam indicators.
+    """
     rng = np.random.default_rng(random_state)
 
     amount = np.clip(rng.gamma(shape=2.1, scale=1600, size=n_samples), 50, 150000)
@@ -34,7 +43,7 @@ def generate_synthetic_data(n_samples: int = 7000, random_state: int = 42) -> pd
     rapid_consecutive_requests = (rng.random(n_samples) < (0.06 + 0.03 * (transactions_last_hour > 4))).astype(int)
     suspicious_receive_link = (rng.random(n_samples) < 0.08).astype(int)
     is_new_payee = (rng.random(n_samples) < 0.28).astype(int)
-    odd_hour = ((hour_of_day <= 5) | (hour_of_day >= 23)).astype(int)
+    odd_hour = np.array([is_odd_hour(int(hour)) for hour in hour_of_day], dtype=int)
 
     df = pd.DataFrame(
         {
@@ -93,6 +102,11 @@ def _normalize_to_range(value: float, low: float, high: float, out_low: float = 
 
 
 def score_transaction(features: Dict[str, float], artifacts: Dict) -> Dict:
+    """Score one transaction and return a user-friendly risk assessment.
+
+    Expected feature keys match FEATURE_COLUMNS. The output always includes:
+    risk_score (0-100), classification, short reason, and a list of reasons.
+    """
     x = pd.DataFrame([features], columns=artifacts["feature_columns"])
     scaled = artifacts["scaler"].transform(x)
 
@@ -175,4 +189,3 @@ def score_transaction(features: Dict[str, float], artifacts: Dict) -> Dict:
         "reason": short_reason,
         "reasons": reasons,
     }
-
