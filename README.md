@@ -24,12 +24,12 @@ A working, interpretable UPI fraud-risk prototype that:
 
 ## Project Structure
 
-- `/tmp/workspace/DhwaniVtech/Upi-fraud-detection-/app.py` – FastAPI server + routes
-- `/tmp/workspace/DhwaniVtech/Upi-fraud-detection-/fraud_engine.py` – data simulation, training, scoring logic
-- `/tmp/workspace/DhwaniVtech/Upi-fraud-detection-/train_model.py` – optional manual model training script
-- `/tmp/workspace/DhwaniVtech/Upi-fraud-detection-/templates/index.html` – web UI
-- `/tmp/workspace/DhwaniVtech/Upi-fraud-detection-/static/style.css` – UI styling
-- `/tmp/workspace/DhwaniVtech/Upi-fraud-detection-/requirements.txt` – dependencies
+- `app.py` – FastAPI server + routes
+- `fraud_engine.py` – data simulation, training, scoring logic
+- `train_model.py` – optional manual model training script
+- `templates/index.html` – web UI
+- `static/style.css` – UI styling
+- `requirements.txt` – dependencies
 
 ---
 
@@ -38,7 +38,7 @@ A working, interpretable UPI fraud-risk prototype that:
 ### 1) Create and activate a virtual environment
 
 ```bash
-cd /tmp/workspace/DhwaniVtech/Upi-fraud-detection-
+cd <repository-directory>
 python -m venv .venv
 source .venv/bin/activate
 ```
@@ -46,13 +46,13 @@ source .venv/bin/activate
 ### 2) Install dependencies
 
 ```bash
-pip install -r /tmp/workspace/DhwaniVtech/Upi-fraud-detection-/requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 3) (Optional) Train model manually
 
 ```bash
-python /tmp/workspace/DhwaniVtech/Upi-fraud-detection-/train_model.py
+python train_model.py
 ```
 
 > If you skip this step, the API auto-trains on first startup if no model artifacts exist.
