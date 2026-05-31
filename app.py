@@ -37,6 +37,7 @@ class TransactionInput(BaseModel):
     suspicious_receive_link: bool = False
     is_new_payee: bool = False
 
+
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})

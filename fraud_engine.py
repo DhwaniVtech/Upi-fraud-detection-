@@ -24,7 +24,7 @@ MODEL_PATH = Path("model_artifacts/iforest.joblib")
 
 
 def is_odd_hour(hour_of_day: int) -> int:
-    return int(hour_of_day <= 5 or hour_of_day == 23)
+    return int(hour_of_day < 6 or hour_of_day == 23)
 
 
 def generate_synthetic_data(n_samples: int = 7000, random_state: int = 42) -> pd.DataFrame:
@@ -94,6 +94,7 @@ def load_model(model_path: Path = MODEL_PATH) -> Dict:
 
 
 def _normalize_to_range(value: float, low: float, high: float, out_low: float = 0, out_high: float = 30) -> float:
+    """Linearly map value from [low, high] to [out_low, out_high] with clamping."""
     if high <= low:
         return out_low
     ratio = (value - low) / (high - low)
@@ -172,16 +173,16 @@ def score_transaction(features: Dict[str, float], artifacts: Dict) -> Dict:
     else:
         classification = "Safe"
 
-    if not reasons and classification == "Safe":
-        reasons.append("No strong scam indicators were found in this transaction.")
-    elif anomaly_strength >= 16:
+    if not reasons:
+        if classification == "Safe":
+            reasons.append("No strong scam indicators were found in this transaction.")
+        else:
+            reasons.append("Multiple weak risk signals combined to raise this alert.")
+    if anomaly_strength >= 16:
         reasons.append("Behavior pattern is statistically unusual compared to normal transactions.")
 
-    short_reason = (
-        f"This transaction looks {classification.lower()} because "
-        + ", ".join(reasons[:2]).rstrip(".")
-        + "."
-    )
+    concise_reasons = ", ".join(reason.rstrip(".") for reason in reasons[:2])
+    short_reason = f"This transaction looks {classification.lower()} because {concise_reasons}."
 
     return {
         "risk_score": risk_score,

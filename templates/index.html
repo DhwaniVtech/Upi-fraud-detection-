@@ -76,7 +76,7 @@
             body: JSON.stringify(payload)
           });
           if (!response.ok) {
-            throw new Error("Unable to fetch risk score right now.");
+            throw new Error(`HTTP ${response.status}: ${response.statusText || "Request failed"}`);
           }
           const data = await response.json();
 
@@ -95,7 +95,7 @@
         } catch (error) {
           riskScore.textContent = "-";
           classification.textContent = "Error";
-          reason.textContent = "Could not score this transaction right now. Please try again.";
+          reason.textContent = `Could not process this request right now (${error.message || "temporary error"}). Please try again.`;
           reasonsList.innerHTML = "";
           result.classList.remove("hidden", "safe", "suspicious", "fraudulent");
           result.classList.add("suspicious");

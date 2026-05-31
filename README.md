@@ -109,7 +109,7 @@ curl -X POST "http://127.0.0.1:8000/api/score" \
 {
   "risk_score": 93,
   "classification": "Fraudulent",
-  "reason": "This transaction looks risky because it includes suspicious receive-money links and very low device trust.",
+  "reason": "This transaction looks fraudulent because it includes suspicious receive-money links and very low device trust.",
   "reasons": [
     "Suspicious receive-money link signal was detected.",
     "Device reputation is very low for this transaction.",
@@ -131,7 +131,7 @@ curl -X POST "http://127.0.0.1:8000/api/score" \
 
 - **Likely Fraudulent**:
   - unusually high amount,
-  - odd-hour transaction (`0-5` or `23`),
+  - odd-hour transaction (hours `0-5` or `23`),
   - high velocity (`>= 6` tx/hour),
   - low device reputation (`< 0.4`),
   - rapid requests and suspicious link indicators.
