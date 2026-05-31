@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import threading
+import time
 import webbrowser
 from dataclasses import dataclass
 from typing import List
@@ -105,7 +106,7 @@ class FraudEngine:
         elif txn.amount >= 7000:
             score += 7
             reasons.append("Above-average amount adds caution.")
-        if txn.hour_of_day <= 4 or txn.hour_of_day >= 23:
+        if txn.hour_of_day <= 4 or txn.hour_of_day >= 22:
             score += 10
             reasons.append("Late-night transaction timing can be riskier.")
 
@@ -242,10 +243,9 @@ def _open_browser() -> None:
 if __name__ == "__main__":
     import uvicorn
 
-    browser_timer = threading.Timer(1.5, _open_browser)
-    browser_timer.daemon = True
-    browser_timer.start()
-    try:
-        uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=False)
-    finally:
-        browser_timer.cancel()
+    browser_thread = threading.Thread(
+        target=lambda: (time.sleep(1.5), _open_browser()),
+        daemon=True,
+    )
+    browser_thread.start()
+    uvicorn.run("app:app", host="127.0.0.1", port=8000, reload=False)
